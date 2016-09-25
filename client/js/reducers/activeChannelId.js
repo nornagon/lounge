@@ -3,7 +3,12 @@ import * as actions from "../actions";
 export default function activeChannelId(state = null, action) {
 	switch (action.type) {
 	case actions.INITIAL_DATA_RECEIVED:
-		return action.data.active;  // TODO: what if active is undefined / not in the channel list?
+		if (action.data.active < 0) {
+			for (let network of action.data.networks) {
+				return network.channels[0].id;
+			}
+		}
+		return action.data.active;
 	case actions.CHANGE_ACTIVE_CHANNEL:
 		return action.channelId;
 	case actions.JOINED_NETWORK: {

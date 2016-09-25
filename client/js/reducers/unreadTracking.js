@@ -30,11 +30,17 @@ export default function unreadTracking(state, action) {
 	case actions.CHANGE_ACTIVE_CHANNEL: {
 		let {channelId} = action;
 		if (state.activeChannelId in state.channels && channelId !== state.activeChannelId) {
-			return updateIn(
+			state = updateIn(
 				state,
 				["channels", state.activeChannelId],
 				chan => ({...chan, firstUnread: 0, unread: 0, highlight: false})
 			);
+			state = setIn(
+				state,
+				["channels", channelId, "highlight"],
+				false
+			);
+			return state;
 		} else {
 			return state;
 		}

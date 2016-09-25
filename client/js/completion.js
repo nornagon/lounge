@@ -36,8 +36,8 @@ export default function complete(state, partialWord) {
 	let recentSpeakerSet = new Set(recentSpeakers);
 	let nicks = chan.users.map(u => u.name).filter(n => !recentSpeakerSet.has(n));
 	let chans = [];
-	for (let channelId in store.getState().channels) {
-		let channel = store.getState().channels[channelId];
+	for (let channelId in state.channels) {
+		let channel = state.channels[channelId];
 		if (channel.type !== "lobby") {
 			chans.push(channel.name);
 		}

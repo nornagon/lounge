@@ -11,6 +11,8 @@ import messagePruning from "./reducers/messagePruning";
 
 function activeWindowId(state = "loading", action) {
 	switch (action.type) {
+	case actions.INITIAL_DATA_RECEIVED:
+		return "chat-container"
 	case actions.CHANGE_ACTIVE_WINDOW:
 		return action.windowId;
 	default:

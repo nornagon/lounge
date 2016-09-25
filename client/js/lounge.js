@@ -14,19 +14,19 @@ import app from "./reducers";
 import * as actionCreators from "./actions";
 
 function observeStore(store, select, onChange) {
-  let currentState;
+	let currentState;
 
-  function handleChange() {
-    let nextState = select(store.getState());
-    if (nextState !== currentState) {
-      currentState = nextState;
-      onChange(currentState);
-    }
-  }
+	function handleChange() {
+		let nextState = select(store.getState());
+		if (nextState !== currentState) {
+			currentState = nextState;
+			onChange(currentState);
+		}
+	}
 
-  let unsubscribe = store.subscribe(handleChange);
-  handleChange();
-  return unsubscribe;
+	let unsubscribe = store.subscribe(handleChange);
+	handleChange();
+	return unsubscribe;
 }
 
 $(function() {
@@ -78,7 +78,7 @@ $(function() {
 	sidebarRoot.remove();
 
 	const getActiveNick = (state) => {
-		if (state.activeChannelId && state.channels[state.activeChannelId]) {
+		if (state.activeChannelId != null && state.channels[state.activeChannelId]) {
 			let networkId = state.channels[state.activeChannelId].networkId;
 			let network = state.networks.find(n => n.id === networkId);
 			return network.nick;
@@ -110,7 +110,7 @@ $(function() {
 	observeStore(
 		store,
 		state => state.activeChannelId,
-		(activeChannelId) => {
+		activeChannelId => {
 			viewport.removeClass("lt");
 			focus();
 			let title = "The Lounge";
@@ -123,6 +123,19 @@ $(function() {
 			document.title = title;
 		}
 	);
+
+	observeStore(
+		store,
+		state => {
+			for (let id in state.channels) {
+				if (state.channels[id].highlight) {
+					return true;
+				}
+			}
+			return false;
+		},
+		toggleNotificationMarkers
+	)
 
 	var pop;
 	try {
@@ -137,8 +150,6 @@ $(function() {
 	$("#play").on("click", function() {
 		pop.play();
 	});
-
-	var favicon = $("#favicon");
 
 	function render(name, data) {
 		return Handlebars.templates[name](data);
@@ -250,12 +261,6 @@ $(function() {
 	function renderNetworks(data) {
 		confirmExit();
 		// sortable();
-
-		/*
-		if (sidebar.find(".highlight").length) {
-			toggleNotificationMarkers(true);
-		}
-		*/
 	}
 
 	function matchesSomeHighlight(msg) {
@@ -643,7 +648,6 @@ $(function() {
 		if (options.notification) {
 			pop.play();
 		}
-		toggleNotificationMarkers(true);
 
 		if (options.desktopNotifications && Notification.permission === "granted") {
 			var title;
@@ -663,8 +667,7 @@ $(function() {
 
 			var notify = new Notification(title, {
 				body: body,
-				icon: "img/logo-64.png",
-				tag: target
+				icon: "img/logo-64.png"
 			});
 			notify.onclick = function() {
 				window.focus();
@@ -837,8 +840,8 @@ $(function() {
 	}
 	*/
 
-	// TODO
 	function toggleNotificationMarkers(newState) {
+		var favicon = $("#favicon");
 		// Toggles the favicon to red when there are unread notifications
 		if (favicon.data("toggled") !== newState) {
 			var old = favicon.attr("href");
@@ -850,13 +853,4 @@ $(function() {
 		// Toggles a dot on the menu icon when there are unread notifications
 		$("#viewport .lt").toggleClass("notified", newState);
 	}
-
-	document.addEventListener(
-		"visibilitychange",
-		function() {
-			if (sidebar.find(".highlight").length === 0) {
-				toggleNotificationMarkers(false);
-			}
-		}
-	);
 });

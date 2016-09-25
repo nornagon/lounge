@@ -97,10 +97,10 @@ describe("channel switching", () => {
 		expect(unreadTracking(initialWithUnread, action).channels[1].unread).toBe(0);
 	});
 
-	it("resets the highlight flag when switching away from a channel", () => {
-		let initialWithHighlight = setIn(initial, ["channels", 1, "highlight"], true)
+	it("resets the highlight flag when switching to from a channel", () => {
+		let initialWithHighlight = setIn(initial, ["channels", 2, "highlight"], true)
 		let action = {type: actions.CHANGE_ACTIVE_CHANNEL, channelId: 2};
-		expect(unreadTracking(initialWithHighlight, action).channels[1].highlight).toBe(false);
+		expect(unreadTracking(initialWithHighlight, action).channels[2].highlight).toBe(false);
 	});
 
 	it("doesn't reset firstUnread switching to a channel", () => {
