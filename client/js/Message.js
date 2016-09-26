@@ -20,20 +20,20 @@ function tz(time) {
 }
 
 // Exported for testing.
-export const Actions = {
-	action: ({mode, from, text}) =>
+export const MessageContent = {
+	action: ({message: {mode, from, text}}) =>
 		<span>
 			<UserName nick={from} mode={mode} /> <span className="action-text"><LinkerizedText text={text} /></span>
 		</span>,
 
-	join: ({from, mode, hostmask}) =>
+	join: ({message: {from, mode, hostmask}}) =>
 		<span>
 			<UserName mode={mode} nick={from} />
 			{" "}<i className="hostmask">({hostmask})</i>
 			{" "}has joined the channel
 		</span>,
 
-	part: ({from, mode, hostmask, text}) =>
+	part: ({message: {from, mode, hostmask, text}}) =>
 		<span>
 			<UserName mode={mode} nick={from} />
 			{" "}<i className="hostmask">({hostmask})</i>
@@ -43,7 +43,7 @@ export const Actions = {
 				: null}
 		</span>,
 
-	quit: ({from, mode, hostmask, text}) =>
+	quit: ({message: {from, mode, hostmask, text}}) =>
 		<span>
 			<UserName mode={mode} nick={from} />
 			{" "}<i className="hostmask">({hostmask})</i>
@@ -53,20 +53,20 @@ export const Actions = {
 				: null}
 		</span>,
 
-	mode: ({from, mode, text}) =>
+	mode: ({message: {from, mode, text}}) =>
 		<span>
 			<UserName mode={mode} nick={from} />
 			{" "}sets mode <LinkerizedText text={text} />
 		</span>,
 
-	topic_set_by: ({nick, mode, when}) =>
+	topic_set_by: ({message: {nick, mode, when}}) =>
 		<span>
 			Topic set by
 			{" "}<UserName mode={mode} nick={nick} />
 			{" "}on {new Date(when).toLocaleString()}
 		</span>,
 
-	topic: ({from, mode, text}) =>
+	topic: ({message: {from, mode, text}}) =>
 		<span>
 			{from
 				? <span><UserName mode={mode} nick={from} /> has changed the topic to: </span>
@@ -75,18 +75,18 @@ export const Actions = {
 			<span className="new-topic"><LinkerizedText text={text} /></span>
 		</span>,
 
-	nick: ({nick, mode, new_nick}) =>
+	nick: ({message: {nick, mode, new_nick}}) =>
 		<span>
 			<UserName mode={mode} nick={nick} /> is now known as <UserName mode={mode} nick={new_nick} />
 		</span>,
 
-	ctcp: ({from, ctcpType, ctcpMessage}) =>
+	ctcp: ({message: {from, ctcpType, ctcpMessage}}) =>
 		<span>
 			<UserName nick={from} />
 			<b>{ctcpType}</b> <LinkerizedText text={ctcpMessage} />
 		</span>,
 
-	kick: ({mode, from, target, text}) =>
+	kick: ({message: {mode, from, target, text}}) =>
 		<span>
 			<UserName mode={mode} nick={from} /> has kicked <UserName nick={target} />
 			{text
@@ -94,14 +94,14 @@ export const Actions = {
 				: null}
 		</span>,
 
-	invite: ({from, invitedYou, invited, channel}) => {
+	invite: ({message: {from, invitedYou, invited, channel}}) => {
 		let invitee = invitedYou ? "you" : <UserName nick={invited} />;
 		return <span>
 			<UserName nick={from} /> invited {invitee} to <LinkerizedText text={channel} />
 		</span>;
 	},
 
-	whois: ({whois}) =>
+	whois: ({message: {whois}}) =>
 		<span>
 			<div>
 				<UserName nick={whois.nick} /> <i className="hostmask">({whois.user}@{whois.host})</i>: <b>{whois.real_name}</b>
@@ -120,7 +120,7 @@ export const Actions = {
 
 	toggle: ToggleablePreview,
 
-	unhandled: ({params}) =>
+	unhandled: ({message: {params}}) =>
 		<span>
 			{params.map((p, i) => <span key={i}> {p}</span>)}
 		</span>,
@@ -141,44 +141,35 @@ const Preview = {
 		</a>,
 };
 
-class ToggleablePreview extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {isOpen: false};
-	}
-	render() {
-		let {previewData: data} = this.props;
-		return (
-			<div>
-				<div className="force-newline">
-					<button
-						className="toggle-button"
-						aria-label="Toggle prefetched media"
-						onClick={() => this.toggle()}
-					>···</button>
-				</div>
-				<div className={classNames("toggle-content", {show: this.props.isOpen})}>
-					{data && React.createElement(Preview[data.type], {data})}
-				</div>
+const ToggleablePreview = ({message, actions}) => {
+	let data = message.previewData;
+	return (
+		<div>
+			<div className="force-newline">
+				<button
+					className="toggle-button"
+					aria-label="Toggle prefetched media"
+					onClick={() => actions.togglePreview(message.id, !message.previewIsOpen)}
+				>···</button>
 			</div>
-		);
-	}
-	toggle() {
-		this.setState({isOpen: !this.state.isOpen});
-	}
+			<div className={classNames("toggle-content", {show: message.previewIsOpen})}>
+				{data && React.createElement(Preview[data.type], {data})}
+			</div>
+		</div>
+	);
 }
 
-const Message = ({message}) => {
+const Message = ({message, actions}) => {
 	var from, content;
 
-	if (message.from && !(message.type in Actions)) {
+	if (message.from && !(message.type in MessageContent)) {
 		from = <UserName nick={message.from} mode={message.mode} />;
 	} else if (message.type === "unhandled") {
 		from = <span>[{message.command}]</span>;
 	}
 
-	if (message.type in Actions) {
-		content = React.createElement(Actions[message.type], message);
+	if (message.type in MessageContent) {
+		content = React.createElement(MessageContent[message.type], {message, actions});
 	} else {
 		content = <LinkerizedText text={message.text} />;
 	}

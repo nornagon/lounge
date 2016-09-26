@@ -1,7 +1,7 @@
 import React from "react";
 import {shallow} from "enzyme";
 
-import Message, {Actions} from "../Message";
+import Message, {MessageContent} from "../Message";
 import {LinkerizedText, UserName} from "../util";
 
 describe("Basic functionality", () => {
@@ -24,27 +24,27 @@ describe("Basic functionality", () => {
 describe("Message types", () => {
 	it("unhandled", () => {
 		const data = {params: ["one", "two", "three"]};
-		const wrapper = shallow(<Actions.unhandled {...data} />);
+		const wrapper = shallow(<MessageContent.unhandled {...data} />);
 		for (let p of data.params) {
 			expect(wrapper.contains(p)).toBeTruthy();
 		}
 	});
 	it("action", () => {
 		const data = {from: "nornagon", mode: "+", text: "eats a burrito"};
-		const wrapper = shallow(<Actions.action {...data} />);
+		const wrapper = shallow(<MessageContent.action {...data} />);
 		expect(wrapper.contains(<UserName nick={data.from} mode={data.mode} />)).toBeTruthy();
 		expect(wrapper.contains(<LinkerizedText text={data.text} />)).toBeTruthy();
 	});
 	it("invite someone else", () => {
 		const data = {from: "astorije", invitedYou: false, invited: "someone", channel: "#thelounge"};
-		const wrapper = shallow(<Actions.invite {...data} />);
+		const wrapper = shallow(<MessageContent.invite {...data} />);
 		expect(wrapper.contains(<UserName nick={data.from} />)).toBeTruthy();
 		expect(wrapper.contains(<UserName nick={data.invited} />)).toBeTruthy();
 		expect(wrapper.contains(<LinkerizedText text={data.channel} />)).toBeTruthy();
 	});
 	it("invite you", () => {
 		const data = {from: "astorije", invitedYou: true, invited: "nornagon", channel: "#thelounge"};
-		const wrapper = shallow(<Actions.invite {...data} />);
+		const wrapper = shallow(<MessageContent.invite {...data} />);
 		expect(wrapper.contains(<UserName nick={data.from} />)).toBeTruthy();
 		expect(wrapper.contains(<UserName nick={data.invited} />)).toBeFalsy();
 		expect(wrapper.contains("you")).toBeTruthy();

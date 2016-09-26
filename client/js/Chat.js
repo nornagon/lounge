@@ -46,7 +46,7 @@ export default class Chat extends React.Component {
 			if (channel.firstUnread !== 0 && message.id === channel.firstUnread) {
 				messages.push(<UnreadMarker key="unread" />);
 			}
-			messages.push(<Message key={message.id} message={message} />);
+			messages.push(<Message key={message.id} message={message} actions={actions} />);
 		}
 		messages.reverse();
 		return (

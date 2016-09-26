@@ -155,12 +155,6 @@ $(function() {
 		return Handlebars.templates[name](data);
 	}
 
-	Handlebars.registerHelper(
-		"partial", function(id) {
-			return new Handlebars.SafeString(render(id, this));
-		}
-	);
-
 	socket.on("error", function(e) {
 		console.log(e);
 	});
@@ -259,8 +253,8 @@ $(function() {
 	socket.on("join", ({network, chan}) => actions.joinedChannel(network, chan));
 
 	function renderNetworks(data) {
-		confirmExit();
-		// sortable();
+		// TODO: what was the pre-refactor logic behind when confirmExit was called?
+		//confirmExit();
 	}
 
 	function matchesSomeHighlight(msg) {
@@ -305,20 +299,14 @@ $(function() {
 	socket.on("quit", ({network}) => actions.leftNetwork(network));
 
 	socket.on("toggle", function(data) {
-		var toggle = $("#toggle-" + data.id);
-		toggle.parent().after(render("toggle", {toggle: data}));
-		switch (data.type) {
-		case "link":
-			if (options.links) {
-				toggle.click();
-			}
-			break;
-
-		case "image":
-			if (options.thumbnails) {
-				toggle.click();
-			}
-			break;
+		actions.receivedPreviewData(data);
+		// TODO: Once options is part of app state, this logic should go into
+		// the action creators or reducers
+		if (data.type === "link" && options.links) {
+			actions.togglePreview(data.id, true);
+		}
+		if (data.type === "image" && options.thumbnails) {
+			actions.togglePreview(data.id, true);
 		}
 	});
 

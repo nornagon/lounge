@@ -16,6 +16,8 @@ export const REQUEST_NAMES = "REQUEST_NAMES";
 export const CLEAR_CHANNEL = "CLEAR_CHANNEL";
 export const NICK_CHANGED = "NICK_CHANGED";
 export const CHANGE_ACTIVE_WINDOW = "CHANGE_ACTIVE_WINDOW";
+export const RECEIVED_PREVIEW_DATA = "RECEIVED_PREVIEW_DATA";
+export const TOGGLE_PREVIEW = "TOGGLE_PREVIEW";
 
 export function initialDataReceived(data) {
 	return {type: INITIAL_DATA_RECEIVED, data};
@@ -84,6 +86,14 @@ export function topicChanged(channelId, topic) {
 
 export function messageReceived(channelId, message) {
 	return {type: MESSAGE_RECEIVED, channelId, message};
+}
+
+export function receivedPreviewData(data) {
+	return {type: RECEIVED_PREVIEW_DATA, data};
+}
+
+export function togglePreview(id, open) {
+	return {type: TOGGLE_PREVIEW, id, open};
 }
 
 export function changeActiveChannel(channelId = null) {

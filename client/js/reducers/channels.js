@@ -1,5 +1,5 @@
 import * as actions from "../actions";
-import {updateIn} from "../immutableUtils";
+import {updateIn, updateId} from "../immutableUtils";
 
 function channel(state, action) {
 	switch(action.type) {
@@ -18,6 +18,26 @@ function channel(state, action) {
 
 	case actions.MESSAGE_RECEIVED:
 		return {...state, messages: state.messages.concat([action.message])};
+
+	case actions.RECEIVED_PREVIEW_DATA:
+		return {
+			...state,
+			messages: updateId(
+				state.messages,
+				action.data.id,
+				m => ({...m, previewData: action.data})
+			)
+		};
+
+	case actions.TOGGLE_PREVIEW:
+		return {
+			...state,
+			messages: updateId(
+				state.messages,
+				action.id,
+				m => ({...m, previewIsOpen: action.open})
+			)
+		};
 
 	case actions.RECEIVED_MORE: {
 		let {messages} = action;

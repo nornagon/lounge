@@ -1,11 +1,6 @@
 import * as actions from "../actions";
 import {updateIn} from "../immutableUtils";
 
-// Update `list` by replacing the element `el` with `el.id == targetId` by `f(el)`.
-export function updateId(list, targetId, f) {
-	return list.map(el => el.id === targetId ? f(el) : el);
-}
-
 function normalizeNetwork(network) {
 	return updateIn(network, ["channels"], cs => cs.map(c => c.id));
 }
