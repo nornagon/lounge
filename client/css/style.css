@@ -765,7 +765,7 @@ button {
 #chat .messages {
 	overflow: auto;
 	display: flex;
-	flex-direction: column-reverse;
+	flex-direction: column;
 	width: 100%;
 	padding: 10px 0;
 }

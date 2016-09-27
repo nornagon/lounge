@@ -60,6 +60,24 @@ $(function() {
 	var contextMenuContainer = $("#context-menu-container");
 	var contextMenu = $("#context-menu");
 
+	// TODO: HACK: This _MUST_ be subscribed to the store BEFORE the Chats
+	// component is rendered, because otherwise when <Chats> renders initially,
+	// it will be underneath a 'display: none' window, and as such won't have a
+	// scrollHeight/etc., resulting in failure of the initial scroll-to-bottom
+	// behavior.
+	// Once all windows are beneath a react root, this observer can be removed,
+	// and the call order will no longer be an issue, because all DOM updates
+	// will be applied before calling componentDidMount/DidUpdate.
+	observeStore(
+		store,
+		state => state.activeWindowId,
+		activeWindowId => {
+			$("#windows > .active").removeClass("active");
+			$(document.getElementById(activeWindowId)).addClass("active");
+			viewport.removeClass("lt");
+		}
+	);
+
 	ReactDOM.render(
 		<Provider store={store}>
 			<Chats />
@@ -95,16 +113,6 @@ $(function() {
 			<CurrentNick />
 		</Provider>,
 		document.getElementById("nick")
-	);
-
-	observeStore(
-		store,
-		state => state.activeWindowId,
-		activeWindowId => {
-			$("#windows > .active").removeClass("active");
-			$(document.getElementById(activeWindowId)).addClass("active");
-			viewport.removeClass("lt");
-		}
 	);
 
 	observeStore(
@@ -232,13 +240,6 @@ $(function() {
 	});
 
 	socket.on("init", function(data) {
-		if (data.networks.length === 0) {
-			actions.changeActiveWindow("connect");
-		} else {
-			actions.initialDataReceived(data);
-			// renderNetworks(data);
-		}
-
 		if (data.token && $("#sign-in-remember").is(":checked")) {
 			window.localStorage.setItem("token", data.token);
 		} else {
@@ -248,6 +249,13 @@ $(function() {
 		$("body").removeClass("signed-out");
 		$("#loading").remove();
 		$("#sign-in").remove();
+
+		if (data.networks.length === 0) {
+			actions.changeActiveWindow("connect");
+		} else {
+			actions.initialDataReceived(data);
+			// renderNetworks(data);
+		}
 	});
 
 	socket.on("join", ({network, chan}) => actions.joinedChannel(network, chan));

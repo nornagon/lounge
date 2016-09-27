@@ -3,6 +3,7 @@ import classNames from "classnames";
 
 import Message from "./Message";
 import UserList from "./UserList";
+import StickyScroll from "./StickyScroll";
 
 const UnreadMarker = () =>
 	<div className="unread-marker">
@@ -14,24 +15,7 @@ export default class Chat extends React.Component {
 		// jQuery interop. Temporary.
 		$(this.refs.root).data("id", this.props.channel.id);
 	}
-	componentWillUpdate() {
-		if (this.props.isActive) {
-			let node = this.refs.chat;
-			this.prevScrollTop = node.scrollTop;
-		}
-	}
-	componentDidUpdate(prevProps) {
-		if (this.props.isActive) {
-			let node = this.refs.chat;
-			let isFetchMore = (
-				prevProps.channel.messages.length && this.props.channel.messages.length &&
-				prevProps.channel.messages[0].id > this.props.channel.messages[0].id
-			);
-			if (!isFetchMore && node.scrollTop + node.offsetHeight !== node.scrollHeight) {
-				node.scrollTop = this.prevScrollTop;
-			}
-		}
-	}
+
 	shouldComponentUpdate(nextProps) {
 		return (
 			nextProps.isActive !== this.props.isActive ||
@@ -39,6 +23,7 @@ export default class Chat extends React.Component {
 			nextProps.channel.users !== this.props.channel.users
 		);
 	}
+
 	render() {
 		const {channel, isActive, actions} = this.props;
 		let messages = [];
@@ -48,7 +33,7 @@ export default class Chat extends React.Component {
 			}
 			messages.push(<Message key={message.id} message={message} actions={actions} />);
 		}
-		messages.reverse();
+		let firstMessageId = channel.messages[0] && channel.messages[0].id;
 		return (
 			<div
 				className={classNames("chan", channel.type, {active: isActive})}
@@ -67,18 +52,20 @@ export default class Chat extends React.Component {
 					<span title={channel.topic} className="topic">{channel.topic}</span>
 				</div>
 				<div className={classNames("chat", {active: isActive})}>
-					<div className="messages" ref="chat">
-						{messages}
-						<div className={classNames("show-more", {show: channel.hasMore})}>
-							<button
-								className="show-more-button"
-								data-id={channel.id}
-								onClick={() => actions.requestMore(channel.id)}
-							>
-								Show older messages
-							</button>
+					<StickyScroll isActive={isActive} firstId={firstMessageId}>
+						<div className="messages" ref="chat">
+							<div className={classNames("show-more", {show: channel.hasMore})}>
+								<button
+									className="show-more-button"
+									data-id={channel.id}
+									onClick={() => actions.requestMore(channel.id)}
+								>
+									Show older messages
+								</button>
+							</div>
+							{messages}
 						</div>
-					</div>
+					</StickyScroll>
 				</div>
 				<aside className="sidebar">
 					<UserList users={channel.users} />
